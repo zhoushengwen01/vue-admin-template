@@ -1,4 +1,3 @@
-
 require('es6-promise').polyfill()
 import axios from 'axios'
 import store from '@/store'
@@ -9,16 +8,18 @@ const service = axios.create({
   // withCredentials: true, // send cookies when cross-domain requests
   timeout: 5000 // request timeout
 })
+// 每次请求携带cookies信息
+service.defaults.withCredentials = true
 
-service.defaults.withCredentials = true // 跨域
 // axios.defaults.timeout = 10000
 service.defaults.headers.post['Content-Type'] = 'application/x-www=form-urlencoded'
-// axios.defaults.headers['Authorization'] = ''
+
+
+
 // 请求之前拦截
 service.interceptors.request.use(
   config => {
     // do something before request is sent
-
     if (store.getters.token) {
       // let each request carry token
       // ['X-Token'] is a custom headers key
@@ -33,6 +34,7 @@ service.interceptors.request.use(
     return Promise.reject(error)
   }
 )
+
 
 export default {
   // get请求
