@@ -1,6 +1,6 @@
 <template>
-  <div class="login-container">
-    <el-form ref="loginForm" :model="loginForm" :rules="loginRules" class="login-form" auto-complete="on"
+  <div class="login-container" style="width: 100% ">
+    <el-form ref="loginForm" :model="loginForm" status-icon :rules="loginRules" class="login-form" auto-complete="on"
              label-position="left">
 
       <div class="title-container">
@@ -35,7 +35,7 @@
           name="password"
           tabindex="2"
           auto-complete="on"
-          @keyup.enter.native="handleLogin"
+          @keyup.enter.native="handleLogin('loginForm')"
         />
         <span class="show-pwd" @click="showPwd">
           <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'"/>
@@ -43,9 +43,8 @@
       </el-form-item>
 
       <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;"
-                 @click.native.prevent="handleLogin">Login
+                 @click.native.prevent="handleLogin('loginForm')">Login
       </el-button>
-
 
     </el-form>
   </div>
@@ -60,15 +59,28 @@
   export default {
     name: 'Login',
     data() {
-
+      var validateUsername = (rule, value, callback) => {
+        if (value === '') {
+          callback(new Error('账户名不能为空'))
+        } else {
+          callback()
+        }
+      }
+      var validatePassword = (rule, value, callback) => {
+        if (value === '') {
+          callback(new Error('密码不能为空'))
+        } else {
+          callback()
+        }
+      }
       return {
         loginForm: {
           username: '',
           password: ''
         },
         loginRules: {
-          username: [{ required: true, trigger: 'blur' }],
-          password: [{ required: true, trigger: 'blur' }]
+          username: [{ validator: validateUsername, trigger: 'blur' }],
+          password: [{ validator: validatePassword, trigger: 'blur' }]
         },
         loading: false,
         passwordType: 'password',
@@ -94,19 +106,30 @@
           this.$refs.password.focus()
         })
       },
-      handleLogin: function() {
-        loginApi.login(this.loginForm.username, this.loginForm.password).then((res) => {
-          debugger
-          if (res.code === 0) {
-            setToken(res.msg)
-            router.push('/')
-          } else if (res.code === 1) {
+      handleLogin: function(formName) {
+        this.$refs[formName].validate((valid) => {
+          if (valid) {
+            loginApi.login(this.loginForm.username, this.loginForm.password).then((res) => {
+              debugger
+              if (res.code === 0) {
+                setToken(res.msg)
+                router.push('/')
+              } else if (res.code === 1) {
+                this.$message({
+                  type: 'error',
+                  message: '用户名或密码错误!'
+                })
+              }
+            })
+          } else {
             this.$message({
               type: 'error',
-              message: '用户名或密码错误!'
+              message: '请补全账号密码信息！'
             })
+            return false
           }
         })
+
       }
     }
   }

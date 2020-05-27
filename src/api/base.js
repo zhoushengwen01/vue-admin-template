@@ -1,6 +1,6 @@
 require('es6-promise').polyfill()
 import axios from 'axios'
-import store from '@/store'
+//import store from '@/store'
 import { getToken } from '@/utils/auth'
 
 const service = axios.create({
@@ -14,29 +14,29 @@ service.defaults.withCredentials = true
 // axios.defaults.timeout = 10000
 service.defaults.headers.post['Content-Type'] = 'application/x-www=form-urlencoded'
 
-
-
 // 请求之前拦截
-service.interceptors.request.use(
-  config => {
-    // do something before request is sent
-    if (store.getters.token) {
-      // let each request carry token
-      // ['X-Token'] is a custom headers key
-      // please modify it according to the actual situation
-      config.headers['X-Token'] = getToken()
-    }
-    return config
-  },
-  error => {
-    // do something with request error
-    console.log(error) // for debug
-    return Promise.reject(error)
-  }
-)
-
+// service.interceptors.request.use(
+//   config => {
+//     // do something before request is sent
+//     if (store.getters.token) {
+//       // let each request carry token
+//       // ['X-Token'] is a custom headers key
+//       // please modify it according to the actual situation
+//       config.headers['X-Token'] = getToken()
+//     }
+//     return config
+//   },
+//   error => {
+//     // do something with request error
+//     console.log(error) // for debug
+//     return Promise.reject(error)
+//   }
+// )
 
 export default {
+
+  service,
+
   // get请求
   requestGet(url, params = {}) {
     return new Promise((resolve, reject) => {

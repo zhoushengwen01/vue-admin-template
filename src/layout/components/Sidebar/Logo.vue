@@ -24,7 +24,7 @@ export default {
   },
   data() {
     return {
-      title: 'Vue Admin Template',
+      title: 'WEB TEST',
       logo: require('@/assets/logo/SidebarLogo.png')
     }
   }
