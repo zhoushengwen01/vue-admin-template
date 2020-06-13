@@ -1,6 +1,16 @@
 <template>
   <div class="app-container">
-    <el-button type="primary" @click="handleAddRole()">新增角色</el-button>
+    <el-row :gutter="20">
+      <el-col :span="16">
+        <el-button type="primary" @click="handleAddRole()">新增角色</el-button>
+      </el-col>
+
+      <el-col :span="8">
+        <el-input v-model="searchText" placeholder="角色搜索" class="input-with-select">
+          <el-button slot="append" icon="el-icon-search" @click="search" />
+        </el-input>
+      </el-col>
+    </el-row>
 
     <el-table :data="rolesList" style="width: 100%;margin-top:30px;" border>
       <el-table-column align="center" label="角色" width="220">
@@ -98,7 +108,9 @@ export default {
       confirmRules: {
         role: [{ validator: validate, trigger: 'blur' }],
         name: [{ validator: validate, trigger: 'blur' }]
-      }
+      },
+      searchText: '',
+      searchValue: ''
     }
   },
 
@@ -106,8 +118,14 @@ export default {
     this.getList()
   },
   methods: {
+    search() {
+      debugger
+      this.searchValue = this.searchText.valueOf()
+      this.listQuery.page = 1
+      this.getList()
+    },
     async getList() {
-      await roleApi.pageQuery(this.listQuery.page, this.listQuery.limit).then((res) => {
+      await roleApi.pageQuery(this.listQuery.page, this.listQuery.limit, this.searchValue).then((res) => {
         this.rolesList = res.data
         this.total = res.total
       })
