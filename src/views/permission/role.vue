@@ -36,11 +36,11 @@
     />
 
     <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'修改':'新增'">
-      <el-form :model="role" label-width="80px" label-position="left">
-        <el-form-item label="角色">
+      <el-form ref="roleForm" :key="role" :model="role" label-width="80px" :rules="confirmRules" label-position="left">
+        <el-form-item label="角色" prop="role">
           <el-input v-model="role.role" placeholder="角色" />
         </el-form-item>
-        <el-form-item label="名称">
+        <el-form-item label="名称" prop="name">
           <el-input v-model="role.name" placeholder="角色名称" />
         </el-form-item>
         <el-form-item label="说明">
@@ -54,7 +54,7 @@
       </el-form>
       <div style="text-align:right;">
         <el-button type="danger" @click="dialogVisible=false">取消</el-button>
-        <el-button type="primary" @click="confirmRole">提交</el-button>
+        <el-button type="primary" @click="confirmRole('roleForm')">提交</el-button>
       </div>
     </el-dialog>
   </div>
@@ -66,7 +66,7 @@ import { deepClone } from '@/utils'
 import Pagination from '../../components/Pagination'
 
 const defaultRole = {
-  key: '',
+  role: '',
   name: '',
   description: '',
   routes: []
@@ -75,6 +75,14 @@ const defaultRole = {
 export default {
   components: { Pagination },
   data() {
+    var validate = (rule, value, callback) => {
+      debugger
+      if (value === '') {
+        callback(new Error('不能为空'))
+      } else {
+        callback()
+      }
+    }
     return {
       role: Object.assign({}, defaultRole),
       rolesList: [],
@@ -86,6 +94,10 @@ export default {
         page: 1,
         limit: 10,
         type: [10, 15, 20, 25, 30]
+      },
+      confirmRules: {
+        role: [{ validator: validate, trigger: 'blur' }],
+        name: [{ validator: validate, trigger: 'blur' }]
       }
     }
   },
@@ -145,52 +157,64 @@ export default {
       this.dialogVisible = true
     },
 
-    confirmRole() {
-      const isEdit = this.dialogType === 'edit'
-      const { description, role, name } = this.role
-      if (isEdit) {
-        roleApi.update(this.role).then((res) => {
-          if (res.code === 200) {
-            this.getList()
-            this.dialogVisible = false
-            this.$notify({
-              title: '修改成功',
-              dangerouslyUseHTMLString: true,
-              message: `
+    confirmRole(formName) {
+      debugger
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          const isEdit = this.dialogType === 'edit'
+          const { description, role, name } = this.role
+          if (isEdit) {
+            roleApi.update(this.role).then((res) => {
+              if (res.code === 200) {
+                this.getList()
+                this.dialogVisible = false
+                this.$notify({
+                  title: '修改成功',
+                  dangerouslyUseHTMLString: true,
+                  message: `
             <div>Role: ${role}</div>
             <div>Role Name: ${name}</div>
             <div>Description: ${description}</div>
           `,
-              type: 'success'
-            })
-          }
-        })
-      } else {
-        roleApi.add(this.role).then((res) => {
-          if (res.code === 200) {
-            // 跳转到最后一页
-            debugger
-            this.listQuery.page = Math.ceil((this.total + 1) / this.listQuery.limit) // 向上取整
-            this.getList()
-            this.dialogVisible = false
-            this.$notify({
-              title: '新增成功',
-              dangerouslyUseHTMLString: true,
-              message: `
-            <div>Role: ${role}</div>
-            <div>Role Name: ${name}</div>
-            <div>Description: ${description}</div>
-          `,
-              type: 'success'
+                  type: 'success'
+                })
+              }
             })
           } else {
-            this.$message({
-              type: 'error',
-              message: '新增失败!'
+            roleApi.add(this.role).then((res) => {
+              if (res.code === 200) {
+                // 跳转到最后一页
+                debugger
+                this.listQuery.page = Math.ceil((this.total + 1) / this.listQuery.limit) // 向上取整
+                this.getList()
+                this.dialogVisible = false
+                this.$notify({
+                  title: '新增成功',
+                  dangerouslyUseHTMLString: true,
+                  message: `
+            <div>Role: ${role}</div>
+            <div>Role Name: ${name}</div>
+            <div>Description: ${description}</div>
+          `,
+                  type: 'success'
+                })
+              } else {
+                this.$message({
+                  type: 'error',
+                  message: '新增失败!'
+                })
+              }
             })
           }
-        })
-      }
+        } else {
+          debugger
+          this.$message({
+            type: 'error',
+            message: '请补全账号密码信息！'
+          })
+          return false
+        }
+      })
     }
   }
 }
